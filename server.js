@@ -1,19 +1,13 @@
 var express = require('express'); //Require Express NPM Module
+var bodyParser = require('body-parser');
+
 var app =  express();
 var PORT = process.env.PORT || 3000; //Used env.PORT for Heroku
-var todos = [{
-	id: 1, //uniqueID
-	description: 'Meet mom for lunch',
-	completed: false
-},{
-	id: 2,
-	description: 'Go to Market',
-	completed: false
-},{
-	id: 3,
-	description: 'Feed the Dog',
-	completed: true
-}];
+var todos = [];
+var todoNextID = 1;
+
+//Setting up Middleware
+app.use(bodyParser.json());//anytime a JSON request comes in, Express parses it and we can access it via bodyParser
 
 app.get('/', function(request, response){
 	response.send('To Do API Root');
@@ -21,9 +15,8 @@ app.get('/', function(request, response){
 
 //GET /todos
 app.get('/todos', function(request, response){
-	response.json(todos);
-	
-})
+	response.json(todos);	
+});
 
 
 //GET /todos/:id
@@ -48,6 +41,30 @@ app.get('/todos/:id', function(request, response){
 	}
 	
 });
+
+
+// POST  /todos
+app.post('/todos', function(request, response){
+	console.log('POST /todos');
+	var body = request.body;
+
+	console.log('Description: ' + body.description);
+
+	/*	
+	var newTodo = {
+		id: todoNextID,
+		description: body.description,
+		completed: body.completed
+	}
+	todoNextID++;
+	todos.push(newTodo);
+	*/
+
+	body.id = todoNextID++
+	todos.push(body);
+	response.json(body);	
+});
+
 
 
 app.listen(PORT, function(){
