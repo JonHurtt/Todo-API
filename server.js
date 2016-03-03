@@ -79,6 +79,42 @@ app.delete('/todos/:id', function(request, response){
 });
 
 
+//PUT /todos/:id
+app.put('/todos/:id', function(request, response){
+	console.log("PUT /todos/:id");
+	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
+	var matchedTodo = _.findWhere(todos, {id: todoID});
+
+	//Save Body and reomve unwanted keys
+	var body = _.pick(request.body, 'description', 'completed')
+	var validAttributes = {};
+
+
+	if(!matchedTodo){
+		return response.status(404).json({"error:" : "No ToDo found with id of " + todoID + ". Cannot PUT"});
+	}	
+
+	//Validate Properties
+	if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+		validAttributes.completed = body.completed;
+	}else if(body.hasOwnProperty('completed')){
+		return response.status(404).json({"error:" : "Unable to Update completed with id of " + todoID + ". Cannot PUT"});
+	}
+	
+	if(body.hasOwnProperty('description') && _.isString(body.description) && (body.description.trim().length() > 0)){
+		validAttributes.description = body.description;
+	}else if(body.hasOwnProperty('description')){
+		return response.status(404).json({"error:" : "Unable to Update description with id of " + todoID + ". Cannot PUT"});
+	}
+	
+	
+	_.extend(matchedTodo, validAttributes); //extend already updates matchedToDO no need to assign it
+	response.json(matchedTodo);
+
+
+	
+});
+
 app.listen(PORT, function(){
 	console.log('Webserver listing on '+ PORT + '!')
 	
