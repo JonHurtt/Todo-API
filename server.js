@@ -16,7 +16,7 @@ app.get('/', function(request, response){
 	response.send('To Do API Root');
 });
 
-//GET /todos
+//GET /todos?completed=true?q=house
 app.get('/todos', function(request, response){
 	console.log("GET /todos");
 	var queryParams = request.query;//will be a string
@@ -31,6 +31,17 @@ app.get('/todos', function(request, response){
 	}else if(queryParams.hasOwnProperty('completed') && queryParams.completed == 'false') {
 		filteredTodos = _.where(filteredTodos, {completed: false})		
 	}
+	
+	if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0){
+		//Check to see if descritpion contains queryParams.q
+		filteredTodos = _.filter(filteredTodos, function(todo){
+			//Check to see if indexOf finds q in.
+			return 	todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;		
+		})
+		
+
+	}
+
 	
 	//respond with filtered todos (which might not be filtered)
 	response.json(filteredTodos);
