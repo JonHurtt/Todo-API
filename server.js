@@ -19,7 +19,21 @@ app.get('/', function(request, response){
 //GET /todos
 app.get('/todos', function(request, response){
 	console.log("GET /todos");
-	response.json(todos);	
+	var queryParams = request.query;//will be a string
+	console.log(queryParams);
+
+	var filteredTodos = todos;
+	
+	//Check to make sure Query has this property and then if its true
+	if(queryParams.hasOwnProperty('completed') && queryParams.completed == 'true'){
+		filteredTodos = _.where(filteredTodos, {completed: true})
+		
+	}else if(queryParams.hasOwnProperty('completed') && queryParams.completed == 'false') {
+		filteredTodos = _.where(filteredTodos, {completed: false})		
+	}
+	
+	//respond with filtered todos (which might not be filtered)
+	response.json(filteredTodos);
 });
 
 
@@ -30,7 +44,7 @@ app.get('/todos/:id', function(request, response){
 	
 	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
 	
-		//Refactor using Underscore
+	//Refactor using Underscore
 	var matchedTodo = _.findWhere(todos, {id: todoID});
 	
 	if(typeof matchedTodo === 'undefined'){
