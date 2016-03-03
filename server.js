@@ -1,5 +1,6 @@
 var express = require('express'); //Require Express NPM Module
 var bodyParser = require('body-parser');
+var _ = require('underscore'); //use the underscore variable of "_"
 
 var app =  express();
 var PORT = process.env.PORT || 3000; //Used env.PORT for Heroku
@@ -24,8 +25,9 @@ app.get('/todos/:id', function(request, response){
 	//response.send('Asking for todo with id of ' + request.params.id);
 	
 	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
-	var matchedTodo;
 	
+	/*
+	var matchedTodo;
 	todos.forEach(function(todo){
 		console.log('Looking for ID: ' + todoID)
 		if(todoID === todo.id){
@@ -33,12 +35,19 @@ app.get('/todos/:id', function(request, response){
 			matchedTodo = todo;
 		}
 	});
-		
+	*/	
+	
+	//Refactor using Underscore
+	var matchedTodo = _.findWhere(todos, {id: todoID});
+	
 	if(typeof matchedTodo === 'undefined'){
 		response.status(404).send();
 	}else{
 		response.json(matchedTodo);
 	}
+	
+	
+	
 	
 });
 
@@ -46,23 +55,19 @@ app.get('/todos/:id', function(request, response){
 // POST  /todos
 app.post('/todos', function(request, response){
 	console.log('POST /todos');
-	var body = request.body;
-
-	console.log('Description: ' + body.description);
-
-	/*	
-	var newTodo = {
-		id: todoNextID,
-		description: body.description,
-		completed: body.completed
+	//Save Body and reomve unwanted keys
+	var body = _.pick(request.body, 'id', 'description', 'completed')
+	
+	//Validation for String or Boolean or Empty String
+	if(!_.isString(body.description) ||  !_.isBoolean(body.completed) || (body.description.trim().length === 0)){
+		response.status(404).send("Error 404");
+	}else{
+		body.id = todoNextID++;
+		body.description = body.description.trim();
+		todos.push(body);
+		response.json(body);	
 	}
-	todoNextID++;
-	todos.push(newTodo);
-	*/
-
-	body.id = todoNextID++
-	todos.push(body);
-	response.json(body);	
+	
 });
 
 
