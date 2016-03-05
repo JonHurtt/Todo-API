@@ -1,6 +1,9 @@
 var express = require('express'); //Require Express NPM Module
 var bodyParser = require('body-parser');
 var _ = require('underscore'); //use the underscore variable of "_"
+console.log("Requring db.js");
+var db = require('./db.js');
+console.log("db.js Loaded");
 
 var app =  express();
 var PORT = process.env.PORT || 3000; //Used env.PORT for Heroku
@@ -65,12 +68,24 @@ app.get('/todos/:id', function(request, response){
 	}	
 });
 
-
+/************************************/
 // POST  /todos
+/************************************/
 app.post('/todos', function(request, response){
 	console.log('POST /todos');
 	//Save Body and reomve unwanted keys
 	var body = _.pick(request.body, 'id', 'description', 'completed')
+
+	db.todo.create(body).then(function (todo){
+		console.log('Created Todo');
+		response.json(todo.toJSON());
+	}, function (error){
+		console.log('Error Creating Todo');
+		response.status(400).json(error);
+	});
+	
+	
+	/*
 	
 	//Validation for String or Boolean or Empty String and sanitize string
 	if(!_.isString(body.description) ||  !_.isBoolean(body.completed) || (body.description.trim().length === 0)){
@@ -81,11 +96,12 @@ app.post('/todos', function(request, response){
 		todos.push(body);
 		response.json(body);	
 	}
-	
+	*/
 });
 
-
+/************************************/
 //Delete /todos/:id
+/************************************/
 app.delete('/todos/:id', function(request, response){
 	console.log("DELETE /todos/:id");
 	
@@ -103,8 +119,9 @@ app.delete('/todos/:id', function(request, response){
 		
 });
 
-
+/************************************/
 //PUT /todos/:id
+/************************************/
 app.put('/todos/:id', function(request, response){
 	console.log("PUT /todos/:id");
 	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
@@ -140,7 +157,16 @@ app.put('/todos/:id', function(request, response){
 	
 });
 
-app.listen(PORT, function(){
-	console.log('Webserver listing on '+ PORT + '!')
-	
+/************************************/
+//Sync DB and then start Web Server
+/************************************/
+db.sequelize.sync()
+.then(function(){
+	app.listen(PORT, function(){
+		console.log('Webserver listing on '+ PORT + '!')
+		
+	});	
 });
+
+
+
