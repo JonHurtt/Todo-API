@@ -10,16 +10,26 @@ var PORT = process.env.PORT || 3000; //Used env.PORT for Heroku
 var todos = [];
 var todoNextID = 1;
 
+/************************************/
 //Setting up Middleware
+/************************************/
+
 app.use(bodyParser.json());//anytime a JSON request comes in, Express parses it and we can access it via bodyParser
 
+/************************************/
 //Get Root
+/************************************/
+
 app.get('/', function(request, response){
 	console.log("GET <root>");
 	response.send('To Do API Root');
 });
 
+
+/************************************/
 //GET /todos?completed=true?q=house
+/************************************/
+
 app.get('/todos', function(request, response){
 	console.log("GET /todos");
 	var queryParams = request.query;//will be a string
