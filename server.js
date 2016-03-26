@@ -59,14 +59,30 @@ app.get('/todos', function(request, response){
 	response.json(filteredTodos);
 });
 
-
+/************************************/
 //GET /todos/:id
+/************************************/
 app.get('/todos/:id', function(request, response){
 	console.log("GET /todos/:id");
 	//response.send('Asking for todo with id of ' + request.params.id);
 	
 	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
 	
+	db.todo.findById(todoID)
+	.then(function(todo){
+			if(!!todo){
+				console.log('Found Todo');			
+				response.json(todo.toJSON());
+			}else{
+				console.log('Error Finding Todo');
+				response.status(404).send();
+			}
+	}, function(error){
+		console.log('Error Finding Todo');
+		response.status(500).json(error);
+	})
+
+	/*
 	//Refactor using Underscore
 	var matchedTodo = _.findWhere(todos, {id: todoID});
 	
@@ -75,6 +91,8 @@ app.get('/todos/:id', function(request, response){
 	}else{
 		response.json(matchedTodo);
 	}	
+	*/
+	
 });
 
 /************************************/
@@ -95,7 +113,6 @@ app.post('/todos', function(request, response){
 	
 	
 	/*
-	
 	//Validation for String or Boolean or Empty String and sanitize string
 	if(!_.isString(body.description) ||  !_.isBoolean(body.completed) || (body.description.trim().length === 0)){
 		response.status(404).send("Error 404");
