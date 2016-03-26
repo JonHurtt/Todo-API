@@ -55,7 +55,6 @@ app.get('/todos', function(request, response){
 
 	}
 
-	
 	//respond with filtered todos (which might not be filtered)
 	response.json(filteredTodos);
 });
