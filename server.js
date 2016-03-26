@@ -32,10 +32,38 @@ app.get('/', function(request, response){
 
 app.get('/todos', function(request, response){
 	console.log("GET /todos");
-	var queryParams = request.query;//will be a string
-	console.log(queryParams);
-
-	var filteredTodos = todos;
+	var query = request.query;//will be a string
+	var where = {};
+	
+	console.log("Query Paramaters");
+	console.log(query);
+	
+	
+	if(query.hasOwnProperty('completed') && query.completed == 'true'){
+		where.completed = true;		
+	}else if(query.hasOwnProperty('completed') && query.completed == 'false') {
+		where.completed = false;		
+	}//endifelse
+	
+	if(query.hasOwnProperty('q') && query.q.length > 0){
+		where.description = {
+			$like: '%'+ query.q + '%'
+		};
+	}//end Query
+	
+	
+	db.todo.findAll({where: where})
+	.then(function(todos){
+		console.log('Found Todos');			
+		response.json(todos);
+		
+	}, function(error){
+		console.log('Error Finding Todos');
+		response.status(500).send();
+		
+	});
+	/*
+		var filteredTodos = todos;
 	
 	//Check to make sure Query has this property and then if its true
 	if(queryParams.hasOwnProperty('completed') && queryParams.completed == 'true'){
@@ -43,7 +71,7 @@ app.get('/todos', function(request, response){
 		
 	}else if(queryParams.hasOwnProperty('completed') && queryParams.completed == 'false') {
 		filteredTodos = _.where(filteredTodos, {completed: false})		
-	}
+	}//endifelse
 	
 	if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0){
 		//Check to see if descritpion contains queryParams.q
@@ -51,22 +79,37 @@ app.get('/todos', function(request, response){
 			//Check to see if indexOf finds q in.
 			return 	todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;		
 		})
-		
-
-	}
+	}//end Query
 
 	//respond with filtered todos (which might not be filtered)
 	response.json(filteredTodos);
+	*/
 });
 
-
+/************************************/
 //GET /todos/:id
+/************************************/
 app.get('/todos/:id', function(request, response){
 	console.log("GET /todos/:id");
 	//response.send('Asking for todo with id of ' + request.params.id);
 	
 	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
 	
+	db.todo.findById(todoID)
+	.then(function(todo){
+			if(!!todo){
+				console.log('Found Todo');			
+				response.json(todo.toJSON());
+			}else{
+				console.log('Error Finding Todo');
+				response.status(404).send();
+			}
+	}, function(error){
+		console.log('Error Finding Todo');
+		response.status(500).send();
+	})
+
+	/*
 	//Refactor using Underscore
 	var matchedTodo = _.findWhere(todos, {id: todoID});
 	
@@ -75,6 +118,8 @@ app.get('/todos/:id', function(request, response){
 	}else{
 		response.json(matchedTodo);
 	}	
+	*/
+	
 });
 
 /************************************/
@@ -95,7 +140,6 @@ app.post('/todos', function(request, response){
 	
 	
 	/*
-	
 	//Validation for String or Boolean or Empty String and sanitize string
 	if(!_.isString(body.description) ||  !_.isBoolean(body.completed) || (body.description.trim().length === 0)){
 		response.status(404).send("Error 404");
