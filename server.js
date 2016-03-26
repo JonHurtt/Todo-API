@@ -106,11 +106,8 @@ app.get('/todos/:id', function(request, response){
 			}
 	}, function(error){
 		console.log('Error Finding Todo');
-<<<<<<< HEAD
 		response.status(500).send();
-=======
 		response.status(500).json(error);
->>>>>>> 9c24cad180020493943bca27d4bf0f2431971d17
 	})
 
 	/*
