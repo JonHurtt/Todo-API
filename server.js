@@ -107,7 +107,6 @@ app.get('/todos/:id', function(request, response){
 	}, function(error){
 		console.log('Error Finding Todo');
 		response.status(500).send();
-		response.status(500).json(error);
 	})
 
 	/*
@@ -131,7 +130,8 @@ app.post('/todos', function(request, response){
 	//Save Body and reomve unwanted keys
 	var body = _.pick(request.body, 'id', 'description', 'completed')
 
-	db.todo.create(body).then(function (todo){
+	db.todo.create(body)
+	.then(function (todo){
 		console.log('Created Todo');
 		response.json(todo.toJSON());
 	}, function (error){
@@ -158,9 +158,30 @@ app.post('/todos', function(request, response){
 /************************************/
 app.delete('/todos/:id', function(request, response){
 	console.log("DELETE /todos/:id");
-	
-	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
+	var todoId = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
+
+	console.log("Destroying Todo");
+	db.todo.destroy({
+		where: {
+			id: todoId
+		}
+	})
+	.then(function(rowsDeleted){
+			if(rowsDeleted === 0){
+				console.log('Error Finding Todo');
+				response.status(404).send();
+			}else{
+				console.log('Found Todo');			
+				response.status(204).send()
+
+			}
+	}, function(error){
+		console.log('Error Finding Todo');
+		response.status(500).send();
+	})
+
 		
+	/*
 	//Refactor using Underscore
 	var matchedTodo = _.findWhere(todos, {id: todoID});
 	
@@ -170,6 +191,7 @@ app.delete('/todos/:id', function(request, response){
 		todos = _.without(todos, matchedTodo);
 		response.json(matchedTodo);
 	}
+	*/
 		
 });
 
