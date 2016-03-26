@@ -200,18 +200,55 @@ app.delete('/todos/:id', function(request, response){
 /************************************/
 app.put('/todos/:id', function(request, response){
 	console.log("PUT /todos/:id");
-	var todoID = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
-	var matchedTodo = _.findWhere(todos, {id: todoID});
+	var todoId = parseInt(request.params.id, 10);//all request are a string, you have to convert to a number
+	
+	//var matchedTodo = _.findWhere(todos, {id: todoID});
 
 	//Save Body and reomve unwanted keys
 	var body = _.pick(request.body, 'description', 'completed')
-	var validAttributes = {};
+	//var validAttributes = {};
+	var attributes = {};
 
-
-	if(!matchedTodo){
+	/*if(!matchedTodo){
 		return response.status(404).json({"error:" : "No ToDo found with id of " + todoID + ". Cannot PUT"});
-	}	
+	}
+	*/
 
+	//Validate Properties
+	if(body.hasOwnProperty('completed')){
+		attributes.completed = body.completed;
+	}else if(body.hasOwnProperty('completed')){
+		return response.status(404).json({"error:" : "Unable to Update completed with id of " + todoId + ". Cannot PUT"});
+	}
+	
+	if(body.hasOwnProperty('description')){
+		attributes.description = body.description;
+	}	
+	
+	//Using an Instance Method vs Model Method
+	db.todo.findById(todoId)
+	.then( function(todo){
+		if(todo){
+			console.log("Todo Found - Now Updating...")			
+			todo.update(attributes)
+			.then(function(todo) {
+				console.log("Success with Updating Todo...")			
+				response.json(todo.toJSON());
+		}, function(error){
+			console.log("Error Updating Todo...")
+			response.status(400).json(error);
+	});
+		}else{
+			console.log("Todo Not Found - Not able to Update...")			
+			response.status(404).send();
+		}
+	}, function(error){
+		console.log("Error Finding Todo Not...")			
+		response.status(500).send()		
+	});
+			
+		
+	/*
 	//Validate Properties
 	if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
 		validAttributes.completed = body.completed;
@@ -228,7 +265,7 @@ app.put('/todos/:id', function(request, response){
 	
 	_.extend(matchedTodo, validAttributes); //extend already updates matchedToDO no need to assign it
 	response.json(matchedTodo);
-
+	*/
 
 	
 });
